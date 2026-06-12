@@ -4,6 +4,8 @@ const {
   shortenUrl,
   getMyLinks,
   deleteLink,
+  getQRCode,
+  setLinkPassword,
 } = require("../controllers/linkController");
 const { protect } = require("../middleware/authMiddleware");
 const { body } = require("express-validator");
@@ -25,5 +27,7 @@ router.post(
 
 router.get("/", protect, getMyLinks);
 router.delete("/:id", protect, deleteLink);
+router.get("/:id/qr", protect, getQRCode);
+router.put("/:id/password", protect, setLinkPassword);
 
 module.exports = router;

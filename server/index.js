@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Health check — must be before redirect engine
+// Health check
 app.get("/", (req, res) => {
   res.json({ message: "Traxly API is running" });
 });
@@ -21,10 +21,9 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/links", require("./routes/linkRoutes"));
 
 // Redirect engine — must be LAST
-app.use(
-  "/:shortCode",
-  require("./controllers/redirectController").handleRedirect
-);
+const { handleRedirect, verifyPassword } = require("./controllers/redirectController");
+app.post("/:shortCode/verify-password", verifyPassword);
+app.use("/:shortCode", handleRedirect);
 
 // Global error handler
 app.use((err, req, res, next) => {

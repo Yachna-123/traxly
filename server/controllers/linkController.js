@@ -2,6 +2,8 @@ const Link = require("../models/Link");
 const Click = require("../models/Click");
 const { nanoid } = require("nanoid");
 const { validationResult } = require("express-validator");
+const QRCode = require("qrcode");
+const bcrypt = require("bcryptjs");
 
 // @route   POST /api/links/shorten
 exports.shortenUrl = async (req, res) => {
@@ -13,14 +15,12 @@ exports.shortenUrl = async (req, res) => {
   const { originalUrl, customAlias, expiresAt } = req.body;
 
   try {
-    // Validate URL format
     try {
       new URL(originalUrl);
     } catch {
       return res.status(400).json({ message: "Invalid URL format" });
     }
 
-    // Handle custom alias
     if (customAlias) {
       const aliasExists = await Link.findOne({ shortCode: customAlias });
       if (aliasExists) {
@@ -28,7 +28,6 @@ exports.shortenUrl = async (req, res) => {
       }
     }
 
-    // Generate unique short code with collision handling
     let shortCode = customAlias || nanoid(6);
     let attempts = 0;
 
@@ -37,9 +36,7 @@ exports.shortenUrl = async (req, res) => {
         shortCode = nanoid(6);
         attempts++;
         if (attempts > 5) {
-          return res
-            .status(500)
-            .json({ message: "Could not generate unique code, try again" });
+          return res.status(500).json({ message: "Could not generate unique code, try again" });
         }
       }
     }
@@ -122,6 +119,71 @@ exports.deleteLink = async (req, res) => {
     await Click.deleteMany({ link: req.params.id });
 
     res.json({ success: true, message: "Link deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @route   GET /api/links/:id/qr
+exports.getQRCode = async (req, res) => {
+  try {
+    const link = await Link.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!link) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+
+    const shortUrl = `${process.env.BASE_URL}/${link.shortCode}`;
+
+    const qrDataUrl = await QRCode.toDataURL(shortUrl, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
+    });
+
+    res.json({
+      success: true,
+      qr: qrDataUrl,
+      shortUrl,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @route   PUT /api/links/:id/password
+exports.setLinkPassword = async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    const link = await Link.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!link) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      link.password = await bcrypt.hash(password, salt);
+    } else {
+      link.password = null;
+    }
+
+    await link.save();
+
+    res.json({
+      success: true,
+      message: password ? "Password set" : "Password removed",
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
