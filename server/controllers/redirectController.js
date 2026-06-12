@@ -2,20 +2,41 @@ const Link = require("../models/Link");
 const Click = require("../models/Click");
 const UAParser = require("ua-parser-js");
 const bcrypt = require("bcryptjs");
+const redis = require("../config/redis");
+
+const CACHE_TTL = 60 * 60; // 1 hour in seconds
 
 // @route   GET /:shortCode
 exports.handleRedirect = async (req, res) => {
   const { shortCode } = req.params;
 
   try {
-    const link = await Link.findOne({ shortCode, isActive: true });
+    // Check Redis cache first
+    const cached = await redis.get(`link:${shortCode}`);
+    let link;
 
-    if (!link) {
-      return res.status(404).json({ message: "Link not found or inactive" });
+    if (cached) {
+      link = JSON.parse(cached);
+      console.log(`Cache HIT for ${shortCode}`);
+    } else {
+      console.log(`Cache MISS for ${shortCode}`);
+      link = await Link.findOne({ shortCode, isActive: true });
+
+      if (!link) {
+        return res.status(404).json({ message: "Link not found or inactive" });
+      }
+
+      // Store in Redis cache
+      await redis.setex(
+        `link:${shortCode}`,
+        CACHE_TTL,
+        JSON.stringify(link)
+      );
     }
 
     // Check expiry
     if (link.expiresAt && new Date() > new Date(link.expiresAt)) {
+      await redis.del(`link:${shortCode}`);
       return res.status(410).json({ message: "This link has expired" });
     }
 

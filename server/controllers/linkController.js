@@ -4,6 +4,7 @@ const { nanoid } = require("nanoid");
 const { validationResult } = require("express-validator");
 const QRCode = require("qrcode");
 const bcrypt = require("bcryptjs");
+const redis = require("../config/redis");
 
 // @route   POST /api/links/shorten
 exports.shortenUrl = async (req, res) => {
@@ -115,6 +116,9 @@ exports.deleteLink = async (req, res) => {
       return res.status(404).json({ message: "Link not found" });
     }
 
+    // Invalidate cache
+    await redis.del(`link:${link.shortCode}`);
+
     await Link.deleteOne({ _id: req.params.id });
     await Click.deleteMany({ link: req.params.id });
 
@@ -180,6 +184,9 @@ exports.setLinkPassword = async (req, res) => {
 
     await link.save();
 
+    // Invalidate cache
+    await redis.del(`link:${link.shortCode}`);
+
     res.json({
       success: true,
       message: password ? "Password set" : "Password removed",
@@ -203,6 +210,9 @@ exports.toggleLink = async (req, res) => {
 
     link.isActive = !link.isActive;
     await link.save();
+
+    // Invalidate cache
+    await redis.del(`link:${link.shortCode}`);
 
     res.json({
       success: true,
@@ -233,7 +243,8 @@ exports.editLink = async (req, res) => {
       return res.status(404).json({ message: "Link not found" });
     }
 
-    // If changing alias, check it's not taken by another link
+    const oldShortCode = link.shortCode;
+
     if (customAlias && customAlias !== link.shortCode) {
       const aliasExists = await Link.findOne({
         shortCode: customAlias,
@@ -260,6 +271,12 @@ exports.editLink = async (req, res) => {
     }
 
     await link.save();
+
+    // Invalidate both old and new short code cache
+    await redis.del(`link:${oldShortCode}`);
+    if (link.shortCode !== oldShortCode) {
+      await redis.del(`link:${link.shortCode}`);
+    }
 
     res.json({
       success: true,
@@ -293,7 +310,6 @@ exports.getLinkStats = async (req, res) => {
 
     const clicks = await Click.find({ link: link._id });
 
-    // Clicks by date (last 7 days)
     const last7Days = [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -307,7 +323,6 @@ exports.getLinkStats = async (req, res) => {
       }).length,
     }));
 
-    // Clicks by device
     const deviceMap = {};
     clicks.forEach((c) => {
       deviceMap[c.device] = (deviceMap[c.device] || 0) + 1;
@@ -317,7 +332,6 @@ exports.getLinkStats = async (req, res) => {
       count,
     }));
 
-    // Clicks by browser
     const browserMap = {};
     clicks.forEach((c) => {
       browserMap[c.browser] = (browserMap[c.browser] || 0) + 1;
@@ -327,7 +341,6 @@ exports.getLinkStats = async (req, res) => {
       count,
     }));
 
-    // Clicks by OS
     const osMap = {};
     clicks.forEach((c) => {
       osMap[c.os] = (osMap[c.os] || 0) + 1;
@@ -337,7 +350,6 @@ exports.getLinkStats = async (req, res) => {
       count,
     }));
 
-    // Clicks by referrer
     const referrerMap = {};
     clicks.forEach((c) => {
       referrerMap[c.referrer] = (referrerMap[c.referrer] || 0) + 1;
