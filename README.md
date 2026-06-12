@@ -14,4 +14,5 @@ A full-stack link management & analytics platform built with the MERN stack.
 React.js · Node.js · Express.js · MongoDB · Redis · JWT · Tailwind CSS · Recharts
 
 ## Status
-🚧 In active development — Day 1 complete
+🚧 In active development — Day 5/14 complete
+Backend fully built: Auth · URL shortening · Analytics · QR codes · Redis caching · Password protection
