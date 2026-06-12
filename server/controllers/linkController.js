@@ -188,3 +188,182 @@ exports.setLinkPassword = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// @route   PUT /api/links/:id/toggle
+exports.toggleLink = async (req, res) => {
+  try {
+    const link = await Link.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!link) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+
+    link.isActive = !link.isActive;
+    await link.save();
+
+    res.json({
+      success: true,
+      isActive: link.isActive,
+      message: link.isActive ? "Link activated" : "Link deactivated",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @route   PUT /api/links/:id
+exports.editLink = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const { originalUrl, customAlias, expiresAt } = req.body;
+
+    const link = await Link.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!link) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+
+    // If changing alias, check it's not taken by another link
+    if (customAlias && customAlias !== link.shortCode) {
+      const aliasExists = await Link.findOne({
+        shortCode: customAlias,
+        _id: { $ne: req.params.id },
+      });
+      if (aliasExists) {
+        return res.status(400).json({ message: "Custom alias already taken" });
+      }
+      link.shortCode = customAlias;
+      link.customAlias = customAlias;
+    }
+
+    if (originalUrl) {
+      try {
+        new URL(originalUrl);
+      } catch {
+        return res.status(400).json({ message: "Invalid URL format" });
+      }
+      link.originalUrl = originalUrl;
+    }
+
+    if (expiresAt !== undefined) {
+      link.expiresAt = expiresAt || null;
+    }
+
+    await link.save();
+
+    res.json({
+      success: true,
+      link: {
+        id: link._id,
+        originalUrl: link.originalUrl,
+        shortCode: link.shortCode,
+        shortUrl: `${process.env.BASE_URL}/${link.shortCode}`,
+        expiresAt: link.expiresAt,
+        isActive: link.isActive,
+        clicks: link.clicks,
+        updatedAt: link.updatedAt,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @route   GET /api/links/:id/stats
+exports.getLinkStats = async (req, res) => {
+  try {
+    const link = await Link.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!link) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+
+    const clicks = await Click.find({ link: link._id });
+
+    // Clicks by date (last 7 days)
+    const last7Days = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split("T")[0];
+    }).reverse();
+
+    const clicksByDate = last7Days.map((date) => ({
+      date,
+      clicks: clicks.filter((c) => {
+        return c.timestamp.toISOString().split("T")[0] === date;
+      }).length,
+    }));
+
+    // Clicks by device
+    const deviceMap = {};
+    clicks.forEach((c) => {
+      deviceMap[c.device] = (deviceMap[c.device] || 0) + 1;
+    });
+    const clicksByDevice = Object.entries(deviceMap).map(([device, count]) => ({
+      device,
+      count,
+    }));
+
+    // Clicks by browser
+    const browserMap = {};
+    clicks.forEach((c) => {
+      browserMap[c.browser] = (browserMap[c.browser] || 0) + 1;
+    });
+    const clicksByBrowser = Object.entries(browserMap).map(([browser, count]) => ({
+      browser,
+      count,
+    }));
+
+    // Clicks by OS
+    const osMap = {};
+    clicks.forEach((c) => {
+      osMap[c.os] = (osMap[c.os] || 0) + 1;
+    });
+    const clicksByOS = Object.entries(osMap).map(([os, count]) => ({
+      os,
+      count,
+    }));
+
+    // Clicks by referrer
+    const referrerMap = {};
+    clicks.forEach((c) => {
+      referrerMap[c.referrer] = (referrerMap[c.referrer] || 0) + 1;
+    });
+    const clicksByReferrer = Object.entries(referrerMap).map(([referrer, count]) => ({
+      referrer,
+      count,
+    }));
+
+    res.json({
+      success: true,
+      stats: {
+        totalClicks: link.clicks,
+        shortUrl: `${process.env.BASE_URL}/${link.shortCode}`,
+        originalUrl: link.originalUrl,
+        createdAt: link.createdAt,
+        expiresAt: link.expiresAt,
+        isActive: link.isActive,
+        clicksByDate,
+        clicksByDevice,
+        clicksByBrowser,
+        clicksByOS,
+        clicksByReferrer,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
