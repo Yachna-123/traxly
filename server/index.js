@@ -11,13 +11,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-
-// Health check
+// Health check — must be before redirect engine
 app.get("/", (req, res) => {
   res.json({ message: "Traxly API is running" });
 });
+
+// API routes
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/links", require("./routes/linkRoutes"));
+
+// Redirect engine — must be LAST
+app.use(
+  "/:shortCode",
+  require("./controllers/redirectController").handleRedirect
+);
 
 // Global error handler
 app.use((err, req, res, next) => {
