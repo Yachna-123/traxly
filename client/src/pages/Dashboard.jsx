@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
+import StatsModal from "../components/StatsModal";
 import {
   Link2,
   Copy,
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [form, setForm] = useState({ originalUrl: "", customAlias: "" });
   const [creating, setCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [selectedLink, setSelectedLink] = useState(null);
 
   useEffect(() => {
     fetchLinks();
@@ -97,6 +99,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
+      {selectedLink && (
+        <StatsModal
+          link={selectedLink}
+          onClose={() => setSelectedLink(null)}
+        />
+      )}
       <nav className="border-b border-[#1E1E2E] bg-[#111118] sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-white tracking-tight">
@@ -210,10 +218,13 @@ export default function Dashboard() {
                       {truncate(link.originalUrl, 60)}
                     </p>
                     <div className="flex items-center gap-4 mt-3">
-                      <span className="flex items-center gap-1.5 text-xs text-[#888899]">
+                      <button
+                        onClick={() => setSelectedLink(link)}
+                        className="flex items-center gap-1.5 text-xs text-[#888899] hover:text-[#6E56CF] transition-colors"
+                      >
                         <BarChart2 size={12} />
                         {link.clicks} clicks
-                      </span>
+                      </button>
                       <span className="text-xs text-[#444455]">
                         {new Date(link.createdAt).toLocaleDateString("en-US", {
                           month: "short",
@@ -270,4 +281,8 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+
+
 
