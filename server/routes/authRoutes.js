@@ -13,8 +13,8 @@ router.post(
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters"),
     body("username")
-      .isAlphanumeric()
-      .withMessage("Username must be alphanumeric")
+      .matches(/^[a-zA-Z0-9_]+$/)
+      .withMessage("Username can only contain letters, numbers and underscores")
       .isLength({ min: 3 })
       .withMessage("Username must be at least 3 characters"),
   ],
