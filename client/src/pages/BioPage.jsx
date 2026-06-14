@@ -11,6 +11,7 @@ export default function BioPage() {
 
   useEffect(() => {
     fetchBioPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchBioPage = async () => {
@@ -113,4 +114,5 @@ export default function BioPage() {
     </div>
   );
 }
+
 

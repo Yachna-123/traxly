@@ -8,6 +8,7 @@ export default function QRModal({ link, onClose }) {
 
   useEffect(() => {
     fetchQR();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchQR = async () => {
@@ -76,4 +77,5 @@ export default function QRModal({ link, onClose }) {
     </div>
   );
 }
+
 
