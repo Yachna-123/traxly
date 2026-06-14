@@ -1,10 +1,10 @@
-const Link = require("../models/Link");
+﻿const Link = require("../models/Link");
 const Click = require("../models/Click");
 const { nanoid } = require("nanoid");
 const { validationResult } = require("express-validator");
 const QRCode = require("qrcode");
 const bcrypt = require("bcryptjs");
-const redis = require("../config/redis");
+const { safeDel } = require("../config/redis");
 
 // Safe Redis delete - won't crash if Redis is down
 const safeDel = async (key) => {
