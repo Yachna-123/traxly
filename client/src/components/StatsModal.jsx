@@ -23,6 +23,7 @@ export default function StatsModal({ link, onClose }) {
 
   useEffect(() => {
     fetchStats();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchStats = async () => {
