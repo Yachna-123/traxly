@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -136,7 +136,9 @@ export default function Dashboard() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-[#6E56CF] font-mono text-sm font-medium">traxly.site/{link.shortCode}</span>
+                      <a href={`https://traxly-api.onrender.com/${link.shortCode}`} target="_blank" rel="noreferrer" className="text-[#6E56CF] font-mono text-sm font-medium hover:underline">
+                        traxly.site/{link.shortCode}
+                      </a>
                       {!link.isActive && <span className="text-xs bg-[#1E1E2E] text-[#888899] px-2 py-0.5 rounded-full">Inactive</span>}
                     </div>
                     <p className="text-[#888899] text-xs truncate">{truncate(link.originalUrl, 50)}</p>
