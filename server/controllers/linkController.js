@@ -6,6 +6,11 @@ const QRCode = require("qrcode");
 const bcrypt = require("bcryptjs");
 const redis = require("../config/redis");
 
+// Safe Redis delete - won't crash if Redis is down
+const safeDel = async (key) => {
+  try { await redis.del(key); } catch (e) { console.error("Redis safeDel failed:", e.message); }
+};
+
 // @route   POST /api/links/shorten
 exports.shortenUrl = async (req, res) => {
   const errors = validationResult(req);
@@ -53,10 +58,11 @@ exports.shortenUrl = async (req, res) => {
     res.status(201).json({
       success: true,
       link: {
-        id: link._id,
+        _id: link._id,
         originalUrl: link.originalUrl,
         shortCode: link.shortCode,
         shortUrl: `${process.env.BASE_URL}/${link.shortCode}`,
+        isActive: link.isActive,
         expiresAt: link.expiresAt,
         clicks: link.clicks,
         createdAt: link.createdAt,
@@ -116,8 +122,8 @@ exports.deleteLink = async (req, res) => {
       return res.status(404).json({ message: "Link not found" });
     }
 
-    // Invalidate cache
-    await redis.del(`link:${link.shortCode}`);
+    // Invalidate cache safely
+    await safeDel(`link:${link.shortCode}`);
 
     await Link.deleteOne({ _id: req.params.id });
     await Click.deleteMany({ link: req.params.id });
@@ -184,8 +190,8 @@ exports.setLinkPassword = async (req, res) => {
 
     await link.save();
 
-    // Invalidate cache
-    await redis.del(`link:${link.shortCode}`);
+    // Invalidate cache safely
+    await safeDel(`link:${link.shortCode}`);
 
     res.json({
       success: true,
@@ -211,8 +217,8 @@ exports.toggleLink = async (req, res) => {
     link.isActive = !link.isActive;
     await link.save();
 
-    // Invalidate cache
-    await redis.del(`link:${link.shortCode}`);
+    // Invalidate cache safely
+    await safeDel(`link:${link.shortCode}`);
 
     res.json({
       success: true,
@@ -272,16 +278,16 @@ exports.editLink = async (req, res) => {
 
     await link.save();
 
-    // Invalidate both old and new short code cache
-    await redis.del(`link:${oldShortCode}`);
+    // Invalidate both old and new short code cache safely
+    await safeDel(`link:${oldShortCode}`);
     if (link.shortCode !== oldShortCode) {
-      await redis.del(`link:${link.shortCode}`);
+      await safeDel(`link:${link.shortCode}`);
     }
 
     res.json({
       success: true,
       link: {
-        id: link._id,
+        _id: link._id,
         originalUrl: link.originalUrl,
         shortCode: link.shortCode,
         shortUrl: `${process.env.BASE_URL}/${link.shortCode}`,
@@ -379,6 +385,7 @@ exports.getLinkStats = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 // @route   GET /api/links/bio/:username
 exports.getBioPage = async (req, res) => {
   try {
