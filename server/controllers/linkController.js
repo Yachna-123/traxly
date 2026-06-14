@@ -4,7 +4,7 @@ const { nanoid } = require("nanoid");
 const { validationResult } = require("express-validator");
 const QRCode = require("qrcode");
 const bcrypt = require("bcryptjs");
-const { safeDel } = require("../config/redis");
+const redis = require("../config/redis");
 
 // Safe Redis delete - won't crash if Redis is down
 const safeDel = async (key) => {
