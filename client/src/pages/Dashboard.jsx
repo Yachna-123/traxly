@@ -16,9 +16,6 @@ import {
   Plus,
   ExternalLink,
   BarChart2,
-  QrCode,
-  Pencil,
-  Search,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -34,7 +31,9 @@ export default function Dashboard() {
   const [editLink, setEditLink] = useState(null);
   const [search, setSearch] = useState("");
 
-  useEffect(() => { fetchLinks(); }, []);
+  useEffect(() => {
+    fetchLinks();
+  }, []);
 
   const fetchLinks = async () => {
     try {
@@ -84,15 +83,15 @@ export default function Dashboard() {
   const handleToggle = async (id) => {
     try {
       const { data } = await API.put(`/links/${id}/toggle`);
-      setLinks(links.map((l) => l._id === id ? { ...l, isActive: data.isActive } : l));
+      setLinks(
+        links.map((l) =>
+          l._id === id ? { ...l, isActive: data.isActive } : l
+        )
+      );
       toast.success(data.message);
     } catch (err) {
       toast.error("Failed to toggle link");
     }
-  };
-
-  const handleUpdate = (updatedLink) => {
-    setLinks(links.map((l) => (l._id === updatedLink.id ? { ...l, ...updatedLink } : l)));
   };
 
   const handleLogout = () => {
@@ -100,13 +99,8 @@ export default function Dashboard() {
     navigate("/login");
   };
 
-  const truncate = (str, n) => str.length > n ? str.substring(0, n) + "..." : str;
-
-  const filteredLinks = links.filter(
-    (l) =>
-      l.shortCode.toLowerCase().includes(search.toLowerCase()) ||
-      l.originalUrl.toLowerCase().includes(search.toLowerCase())
-  );
+  const truncate = (str, n) =>
+    str.length > n ? str.substring(0, n) + "..." : str;
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
@@ -116,8 +110,13 @@ export default function Dashboard() {
             Trax<span className="text-[#6E56CF]">ly</span>
           </h1>
           <div className="flex items-center gap-4">
-            <span className="text-[#888899] text-sm">Hey, {user?.name?.split(" ")[0]} ??</span>
-            <button onClick={handleLogout} className="flex items-center gap-2 text-[#888899] hover:text-white transition-colors text-sm">
+            <span className="text-[#888899] text-sm">
+              Hey, {user?.name?.split(" ")[0]} 👋
+            </span>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-[#888899] hover:text-white transition-colors text-sm"
+            >
               <LogOut size={16} />
               Logout
             </button>
@@ -126,26 +125,20 @@ export default function Dashboard() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-semibold text-white">Your Links</h2>
-            <p className="text-[#888899] text-sm mt-1">{links.length} link{links.length !== 1 ? "s" : ""} total</p>
+            <p className="text-[#888899] text-sm mt-1">
+              {links.length} link{links.length !== 1 ? "s" : ""} total
+            </p>
           </div>
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-[#6E56CF] hover:bg-[#5A42B0] text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 bg-[#6E56CF] hover:bg-[#5A42B0] text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
             <Plus size={16} />
             New Link
           </button>
-        </div>
-
-        <div className="relative mb-6">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444455]" />
-          <input
-            type="text"
-            placeholder="Search links..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#111118] border border-[#1E1E2E] rounded-lg pl-9 pr-4 py-2.5 text-[#EEEEEE] placeholder-[#444455] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm"
-          />
         </div>
 
         {showForm && (
@@ -156,7 +149,9 @@ export default function Dashboard() {
                 type="url"
                 placeholder="https://your-long-url.com"
                 value={form.originalUrl}
-                onChange={(e) => setForm({ ...form, originalUrl: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, originalUrl: e.target.value })
+                }
                 required
                 className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-4 py-2.5 text-[#EEEEEE] placeholder-[#444455] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm"
               />
@@ -165,10 +160,16 @@ export default function Dashboard() {
                   type="text"
                   placeholder="Custom alias (optional)"
                   value={form.customAlias}
-                  onChange={(e) => setForm({ ...form, customAlias: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, customAlias: e.target.value })
+                  }
                   className="flex-1 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-4 py-2.5 text-[#EEEEEE] placeholder-[#444455] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm"
                 />
-                <button type="submit" disabled={creating} className="bg-[#6E56CF] hover:bg-[#5A42B0] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="bg-[#6E56CF] hover:bg-[#5A42B0] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                >
                   {creating ? "Creating..." : "Shorten"}
                 </button>
               </div>
@@ -181,52 +182,89 @@ export default function Dashboard() {
             <div className="w-8 h-8 border-2 border-[#6E56CF] border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-[#888899] mt-4 text-sm">Loading links...</p>
           </div>
-        ) : filteredLinks.length === 0 ? (
+        ) : links.length === 0 ? (
           <div className="text-center py-20 bg-[#111118] border border-[#1E1E2E] rounded-2xl">
             <Link2 size={40} className="text-[#1E1E2E] mx-auto mb-4" />
-            <p className="text-white font-medium">{search ? "No links match your search" : "No links yet"}</p>
-            <p className="text-[#888899] text-sm mt-1">{search ? "Try a different search term" : "Create your first short link above"}</p>
+            <p className="text-white font-medium">No links yet</p>
+            <p className="text-[#888899] text-sm mt-1">
+              Create your first short link above
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredLinks.map((link) => (
-              <div key={link._id} className={`bg-[#111118] border rounded-xl p-5 transition-all ${link.isActive ? "border-[#1E1E2E] hover:border-[#6E56CF]/30" : "border-[#1E1E2E] opacity-50"}`}>
+            {links.map((link) => (
+              <div
+                key={link._id}
+                className={`bg-[#111118] border rounded-xl p-5 transition-all ${
+                  link.isActive
+                    ? "border-[#1E1E2E] hover:border-[#6E56CF]/30"
+                    : "border-[#1E1E2E] opacity-50"
+                }`}
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[#6E56CF] font-mono text-sm font-medium">traxly.site/{link.shortCode}</span>
+                      <span className="text-[#6E56CF] font-mono text-sm font-medium">
+                        traxly.site/{link.shortCode}
+                      </span>
                       {!link.isActive && (
-                        <span className="text-xs bg-[#1E1E2E] text-[#888899] px-2 py-0.5 rounded-full">Inactive</span>
+                        <span className="text-xs bg-[#1E1E2E] text-[#888899] px-2 py-0.5 rounded-full">
+                          Inactive
+                        </span>
                       )}
                     </div>
-                    <p className="text-[#888899] text-xs truncate">{truncate(link.originalUrl, 60)}</p>
+                    <p className="text-[#888899] text-xs truncate">
+                      {truncate(link.originalUrl, 60)}
+                    </p>
                     <div className="flex items-center gap-4 mt-3">
-                      <button onClick={() => setSelectedLink(link)} className="flex items-center gap-1.5 text-xs text-[#888899] hover:text-[#6E56CF] transition-colors">
+                      <span className="flex items-center gap-1.5 text-xs text-[#888899]">
                         <BarChart2 size={12} />
                         {link.clicks} clicks
-                      </button>
+                      </span>
                       <span className="text-xs text-[#444455]">
-                        {new Date(link.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {new Date(link.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => handleCopy(`http://localhost:5000/${link.shortCode}`)} className="p-2 text-[#888899] hover:text-white hover:bg-[#1E1E2E] rounded-lg transition-colors" title="Copy">
+                    <button
+                      onClick={() =>
+                        handleCopy(`http://localhost:5000/${link.shortCode}`)
+                      }
+                      className="p-2 text-[#888899] hover:text-white hover:bg-[#1E1E2E] rounded-lg transition-colors"
+                      title="Copy"
+                    >
                       <Copy size={15} />
                     </button>
-                    <a href={link.originalUrl} target="_blank" rel="noreferrer" className="p-2 text-[#888899] hover:text-white hover:bg-[#1E1E2E] rounded-lg transition-colors" title="Visit">
+                    <a
+                      href={link.originalUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2 text-[#888899] hover:text-white hover:bg-[#1E1E2E] rounded-lg transition-colors"
+                      title="Visit"
+                    >
                       <ExternalLink size={15} />
                     </a>
-                    <button onClick={() => setQrLink(link)} className="p-2 text-[#888899] hover:text-white hover:bg-[#1E1E2E] rounded-lg transition-colors" title="QR Code">
-                      <QrCode size={15} />
+                    <button
+                      onClick={() => handleToggle(link._id)}
+                      className="p-2 text-[#888899] hover:text-white hover:bg-[#1E1E2E] rounded-lg transition-colors"
+                      title="Toggle"
+                    >
+                      {link.isActive ? (
+                        <ToggleRight size={15} className="text-[#00D4AA]" />
+                      ) : (
+                        <ToggleLeft size={15} />
+                      )}
                     </button>
-                    <button onClick={() => setEditLink(link)} className="p-2 text-[#888899] hover:text-[#6E56CF] hover:bg-[#1E1E2E] rounded-lg transition-colors" title="Edit">
-                      <Pencil size={15} />
-                    </button>
-                    <button onClick={() => handleToggle(link._id)} className="p-2 text-[#888899] hover:text-white hover:bg-[#1E1E2E] rounded-lg transition-colors" title="Toggle">
-                      {link.isActive ? <ToggleRight size={15} className="text-[#00D4AA]" /> : <ToggleLeft size={15} />}
-                    </button>
-                    <button onClick={() => handleDelete(link._id)} className="p-2 text-[#888899] hover:text-red-400 hover:bg-[#1E1E2E] rounded-lg transition-colors" title="Delete">
+                    <button
+                      onClick={() => handleDelete(link._id)}
+                      className="p-2 text-[#888899] hover:text-red-400 hover:bg-[#1E1E2E] rounded-lg transition-colors"
+                      title="Delete"
+                    >
                       <Trash2 size={15} />
                     </button>
                   </div>
@@ -236,10 +274,9 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-
-      {selectedLink && <StatsModal link={selectedLink} onClose={() => setSelectedLink(null)} />}
-      {qrLink && <QRModal link={qrLink} onClose={() => setQrLink(null)} />}
-      {editLink && <EditModal link={editLink} onClose={() => setEditLink(null)} onUpdate={handleUpdate} />}
     </div>
   );
 }
+
+
+

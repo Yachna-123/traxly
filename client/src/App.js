@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
+import BioPage from "./pages/BioPage";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -28,6 +29,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/u/:username" element={<BioPage />} />
         <Route
           path="/dashboard"
           element={

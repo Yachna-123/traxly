@@ -9,6 +9,7 @@ const {
   toggleLink,
   editLink,
   getLinkStats,
+  getBioPage,
 } = require("../controllers/linkController");
 const { protect } = require("../middleware/authMiddleware");
 const { body } = require("express-validator");
@@ -28,6 +29,7 @@ router.post(
   shortenUrl
 );
 
+router.get("/bio/:username", getBioPage);
 router.get("/", protect, getMyLinks);
 router.delete("/:id", protect, deleteLink);
 router.get("/:id/qr", protect, getQRCode);

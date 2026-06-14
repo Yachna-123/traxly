@@ -379,3 +379,36 @@ exports.getLinkStats = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+// @route   GET /api/links/bio/:username
+exports.getBioPage = async (req, res) => {
+  try {
+    const user = await require("../models/User").findOne({
+      username: req.params.username,
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const links = await Link.find({
+      user: user._id,
+      isActive: true,
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      user: {
+        name: user.name,
+        username: user.username,
+      },
+      links: links.map((l) => ({
+        id: l._id,
+        shortCode: l.shortCode,
+        originalUrl: l.originalUrl,
+        clicks: l.clicks,
+      })),
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
