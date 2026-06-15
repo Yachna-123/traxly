@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const clickSchema = new mongoose.Schema({
   link: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,6 +29,13 @@ const clickSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  country: {
+    type: String,
+    default: "Unknown",
+  },
+  city: {
+    type: String,
+    default: "Unknown",
+  },
 });
-
 module.exports = mongoose.model("Click", clickSchema);

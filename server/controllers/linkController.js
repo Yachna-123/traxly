@@ -6,12 +6,10 @@ const QRCode = require("qrcode");
 const bcrypt = require("bcryptjs");
 const redis = require("../config/redis");
 
-// Safe Redis delete - won't crash if Redis is down
 const safeDel = async (key) => {
   try { await redis.del(key); } catch (e) { console.error("Redis safeDel failed:", e.message); }
 };
 
-// @route   POST /api/links/shorten
 exports.shortenUrl = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -73,7 +71,6 @@ exports.shortenUrl = async (req, res) => {
   }
 };
 
-// @route   GET /api/links
 exports.getMyLinks = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -92,39 +89,23 @@ exports.getMyLinks = async (req, res) => {
     };
 
     const total = await Link.countDocuments(query);
-    const links = await Link.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const links = await Link.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
 
     res.json({
       links,
-      pagination: {
-        total,
-        page,
-        pages: Math.ceil(total / limit),
-      },
+      pagination: { total, page, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// @route   DELETE /api/links/:id
 exports.deleteLink = async (req, res) => {
   try {
-    const link = await Link.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+    const link = await Link.findOne({ _id: req.params.id, user: req.user._id });
+    if (!link) return res.status(404).json({ message: "Link not found" });
 
-    if (!link) {
-      return res.status(404).json({ message: "Link not found" });
-    }
-
-    // Invalidate cache safely
     await safeDel(`link:${link.shortCode}`);
-
     await Link.deleteOne({ _id: req.params.id });
     await Click.deleteMany({ link: req.params.id });
 
@@ -134,52 +115,29 @@ exports.deleteLink = async (req, res) => {
   }
 };
 
-// @route   GET /api/links/:id/qr
 exports.getQRCode = async (req, res) => {
   try {
-    const link = await Link.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
-
-    if (!link) {
-      return res.status(404).json({ message: "Link not found" });
-    }
+    const link = await Link.findOne({ _id: req.params.id, user: req.user._id });
+    if (!link) return res.status(404).json({ message: "Link not found" });
 
     const shortUrl = `${process.env.BASE_URL}/${link.shortCode}`;
-
     const qrDataUrl = await QRCode.toDataURL(shortUrl, {
       width: 300,
       margin: 2,
-      color: {
-        dark: "#000000",
-        light: "#FFFFFF",
-      },
+      color: { dark: "#000000", light: "#FFFFFF" },
     });
 
-    res.json({
-      success: true,
-      qr: qrDataUrl,
-      shortUrl,
-    });
+    res.json({ success: true, qr: qrDataUrl, shortUrl });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// @route   PUT /api/links/:id/password
 exports.setLinkPassword = async (req, res) => {
   try {
     const { password } = req.body;
-
-    const link = await Link.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
-
-    if (!link) {
-      return res.status(404).json({ message: "Link not found" });
-    }
+    const link = await Link.findOne({ _id: req.params.id, user: req.user._id });
+    if (!link) return res.status(404).json({ message: "Link not found" });
 
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -189,35 +147,21 @@ exports.setLinkPassword = async (req, res) => {
     }
 
     await link.save();
-
-    // Invalidate cache safely
     await safeDel(`link:${link.shortCode}`);
 
-    res.json({
-      success: true,
-      message: password ? "Password set" : "Password removed",
-    });
+    res.json({ success: true, message: password ? "Password set" : "Password removed" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// @route   PUT /api/links/:id/toggle
 exports.toggleLink = async (req, res) => {
   try {
-    const link = await Link.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
-
-    if (!link) {
-      return res.status(404).json({ message: "Link not found" });
-    }
+    const link = await Link.findOne({ _id: req.params.id, user: req.user._id });
+    if (!link) return res.status(404).json({ message: "Link not found" });
 
     link.isActive = !link.isActive;
     await link.save();
-
-    // Invalidate cache safely
     await safeDel(`link:${link.shortCode}`);
 
     res.json({
@@ -230,59 +174,34 @@ exports.toggleLink = async (req, res) => {
   }
 };
 
-// @route   PUT /api/links/:id
 exports.editLink = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
     const { originalUrl, customAlias, expiresAt } = req.body;
-
-    const link = await Link.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
-
-    if (!link) {
-      return res.status(404).json({ message: "Link not found" });
-    }
+    const link = await Link.findOne({ _id: req.params.id, user: req.user._id });
+    if (!link) return res.status(404).json({ message: "Link not found" });
 
     const oldShortCode = link.shortCode;
 
     if (customAlias && customAlias !== link.shortCode) {
-      const aliasExists = await Link.findOne({
-        shortCode: customAlias,
-        _id: { $ne: req.params.id },
-      });
-      if (aliasExists) {
-        return res.status(400).json({ message: "Custom alias already taken" });
-      }
+      const aliasExists = await Link.findOne({ shortCode: customAlias, _id: { $ne: req.params.id } });
+      if (aliasExists) return res.status(400).json({ message: "Custom alias already taken" });
       link.shortCode = customAlias;
       link.customAlias = customAlias;
     }
 
     if (originalUrl) {
-      try {
-        new URL(originalUrl);
-      } catch {
-        return res.status(400).json({ message: "Invalid URL format" });
-      }
+      try { new URL(originalUrl); } catch { return res.status(400).json({ message: "Invalid URL format" }); }
       link.originalUrl = originalUrl;
     }
 
-    if (expiresAt !== undefined) {
-      link.expiresAt = expiresAt || null;
-    }
+    if (expiresAt !== undefined) link.expiresAt = expiresAt || null;
 
     await link.save();
-
-    // Invalidate both old and new short code cache safely
     await safeDel(`link:${oldShortCode}`);
-    if (link.shortCode !== oldShortCode) {
-      await safeDel(`link:${link.shortCode}`);
-    }
+    if (link.shortCode !== oldShortCode) await safeDel(`link:${link.shortCode}`);
 
     res.json({
       success: true,
@@ -302,17 +221,10 @@ exports.editLink = async (req, res) => {
   }
 };
 
-// @route   GET /api/links/:id/stats
 exports.getLinkStats = async (req, res) => {
   try {
-    const link = await Link.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
-
-    if (!link) {
-      return res.status(404).json({ message: "Link not found" });
-    }
+    const link = await Link.findOne({ _id: req.params.id, user: req.user._id });
+    if (!link) return res.status(404).json({ message: "Link not found" });
 
     const clicks = await Click.find({ link: link._id });
 
@@ -324,46 +236,30 @@ exports.getLinkStats = async (req, res) => {
 
     const clicksByDate = last7Days.map((date) => ({
       date,
-      clicks: clicks.filter((c) => {
-        return c.timestamp.toISOString().split("T")[0] === date;
-      }).length,
+      clicks: clicks.filter((c) => c.timestamp.toISOString().split("T")[0] === date).length,
     }));
 
     const deviceMap = {};
-    clicks.forEach((c) => {
-      deviceMap[c.device] = (deviceMap[c.device] || 0) + 1;
-    });
-    const clicksByDevice = Object.entries(deviceMap).map(([device, count]) => ({
-      device,
-      count,
-    }));
+    clicks.forEach((c) => { deviceMap[c.device] = (deviceMap[c.device] || 0) + 1; });
+    const clicksByDevice = Object.entries(deviceMap).map(([device, count]) => ({ device, count }));
 
     const browserMap = {};
-    clicks.forEach((c) => {
-      browserMap[c.browser] = (browserMap[c.browser] || 0) + 1;
-    });
-    const clicksByBrowser = Object.entries(browserMap).map(([browser, count]) => ({
-      browser,
-      count,
-    }));
+    clicks.forEach((c) => { browserMap[c.browser] = (browserMap[c.browser] || 0) + 1; });
+    const clicksByBrowser = Object.entries(browserMap).map(([browser, count]) => ({ browser, count }));
 
     const osMap = {};
-    clicks.forEach((c) => {
-      osMap[c.os] = (osMap[c.os] || 0) + 1;
-    });
-    const clicksByOS = Object.entries(osMap).map(([os, count]) => ({
-      os,
-      count,
-    }));
+    clicks.forEach((c) => { osMap[c.os] = (osMap[c.os] || 0) + 1; });
+    const clicksByOS = Object.entries(osMap).map(([os, count]) => ({ os, count }));
+
+    const countryMap = {};
+    clicks.forEach((c) => { countryMap[c.country] = (countryMap[c.country] || 0) + 1; });
+    const clicksByCountry = Object.entries(countryMap)
+      .map(([country, count]) => ({ country, count }))
+      .sort((a, b) => b.count - a.count);
 
     const referrerMap = {};
-    clicks.forEach((c) => {
-      referrerMap[c.referrer] = (referrerMap[c.referrer] || 0) + 1;
-    });
-    const clicksByReferrer = Object.entries(referrerMap).map(([referrer, count]) => ({
-      referrer,
-      count,
-    }));
+    clicks.forEach((c) => { referrerMap[c.referrer] = (referrerMap[c.referrer] || 0) + 1; });
+    const clicksByReferrer = Object.entries(referrerMap).map(([referrer, count]) => ({ referrer, count }));
 
     res.json({
       success: true,
@@ -378,6 +274,7 @@ exports.getLinkStats = async (req, res) => {
         clicksByDevice,
         clicksByBrowser,
         clicksByOS,
+        clicksByCountry,
         clicksByReferrer,
       },
     });
@@ -386,28 +283,16 @@ exports.getLinkStats = async (req, res) => {
   }
 };
 
-// @route   GET /api/links/bio/:username
 exports.getBioPage = async (req, res) => {
   try {
-    const user = await require("../models/User").findOne({
-      username: req.params.username,
-    });
+    const user = await require("../models/User").findOne({ username: req.params.username });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const links = await Link.find({
-      user: user._id,
-      isActive: true,
-    }).sort({ createdAt: -1 });
+    const links = await Link.find({ user: user._id, isActive: true }).sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      user: {
-        name: user.name,
-        username: user.username,
-      },
+      user: { name: user.name, username: user.username },
       links: links.map((l) => ({
         id: l._id,
         shortCode: l.shortCode,
