@@ -31,11 +31,9 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center px-4">
-      {/* Background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#6E56CF] opacity-10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="w-full max-w-md relative">
-        {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white tracking-tight">
             Trax<span className="text-[#6E56CF]">ly</span>
@@ -45,20 +43,13 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Card */}
         <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl p-8">
-          <h2 className="text-xl font-semibold text-white mb-1">
-            Welcome back
-          </h2>
-          <p className="text-[#888899] text-sm mb-6">
-            Sign in to your Traxly account
-          </p>
+          <h2 className="text-xl font-semibold text-white mb-1">Welcome back</h2>
+          <p className="text-[#888899] text-sm mb-6">Sign in to your Traxly account</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#888899] mb-1.5">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-[#888899] mb-1.5">Email</label>
               <input
                 type="email"
                 name="email"
@@ -71,9 +62,12 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#888899] mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-[#888899]">Password</label>
+                <Link to="/forgot-password" className="text-xs text-[#6E56CF] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 type="password"
                 name="password"
@@ -96,16 +90,12 @@ export default function Login() {
 
           <p className="text-center text-[#888899] text-sm mt-6">
             Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="text-[#6E56CF] hover:text-[#8B73FF] transition-colors font-medium"
-            >
+            <Link to="/register" className="text-[#6E56CF] hover:text-[#8B73FF] transition-colors font-medium">
               Sign up
             </Link>
           </p>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-[#444455] text-xs mt-6">
           © 2026 Traxly. All rights reserved.
         </p>
