@@ -13,10 +13,12 @@ const {
 } = require("../controllers/linkController");
 const { protect } = require("../middleware/authMiddleware");
 const { body } = require("express-validator");
+const rateLimiter = require("../middleware/rateLimiter");
 
 router.post(
   "/shorten",
   protect,
+  rateLimiter(10, 60),
   [
     body("originalUrl").notEmpty().withMessage("URL is required"),
     body("customAlias")
