@@ -1,4 +1,4 @@
-﻿const Link = require("../models/Link");
+const Link = require("../models/Link");
 const Click = require("../models/Click");
 const { nanoid } = require("nanoid");
 const { validationResult } = require("express-validator");
@@ -261,6 +261,7 @@ exports.getLinkStats = async (req, res) => {
     const referrerMap = {};
     clicks.forEach((c) => { referrerMap[c.referrer] = (referrerMap[c.referrer] || 0) + 1; });
     const clicksByReferrer = Object.entries(referrerMap).map(([referrer, count]) => ({ referrer, count }));
+    const utmMap = {}; clicks.forEach((c) => { if (c.utmCampaign) { const key = `${c.utmCampaign}|${c.utmSource || "unknown"}|${c.utmMedium || "unknown"}`; utmMap[key] = (utmMap[key] || 0) + 1; } }); const clicksByUTM = Object.entries(utmMap).map(([key, count]) => { const [campaign, source, medium] = key.split("|"); return { campaign, source, medium, count }; }).sort((a, b) => b.count - a.count);
 
     res.json({
       success: true,
@@ -277,6 +278,7 @@ exports.getLinkStats = async (req, res) => {
         clicksByOS,
         clicksByCountry,
         clicksByReferrer,
+        clicksByUTM,
       },
     });
   } catch (error) {
@@ -305,5 +307,6 @@ exports.getBioPage = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 
