@@ -6,7 +6,7 @@ import API from "../api/axios";
 import StatsModal from "../components/StatsModal";
 import QRModal from "../components/QRModal";
 import EditModal from "../components/EditModal";
-import { Link2, Copy, Trash2, ToggleLeft, ToggleRight, LogOut, Plus, ExternalLink, BarChart2, QrCode, Pencil, Search, MousePointerClick, Activity, User, Clock } from "lucide-react";
+import { Link2, Copy, Trash2, ToggleLeft, ToggleRight, LogOut, Plus, ExternalLink, BarChart2, QrCode, Pencil, Search, MousePointerClick, Activity, User, Clock, Download, Tag } from "lucide-react";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [qrLink, setQrLink] = useState(null);
   const [editLink, setEditLink] = useState(null);
   const [search, setSearch] = useState("");
+  const [campaignFilter, setCampaignFilter] = useState("");
 
   useEffect(() => { fetchLinks(); }, []);
 
@@ -60,11 +61,40 @@ export default function Dashboard() {
   const handleUpdate = (updatedLink) => { setLinks(links.map((l) => (l._id === updatedLink._id ? { ...l, ...updatedLink } : l))); };
   const handleLogout = () => { logout(); navigate("/login"); };
   const truncate = (str, n) => str.length > n ? str.substring(0, n) + "..." : str;
-  const filteredLinks = links.filter((l) => l.shortCode.toLowerCase().includes(search.toLowerCase()) || l.originalUrl.toLowerCase().includes(search.toLowerCase()));
+  const isExpired = (expiresAt) => expiresAt && new Date(expiresAt) < new Date();
+
+  const campaigns = [...new Set(links.map((l) => l.campaign).filter(Boolean))];
+
+  const filteredLinks = links.filter((l) => {
+    const matchesSearch = l.shortCode.toLowerCase().includes(search.toLowerCase()) || l.originalUrl.toLowerCase().includes(search.toLowerCase());
+    const matchesCampaign = campaignFilter === "" || l.campaign === campaignFilter;
+    return matchesSearch && matchesCampaign;
+  });
+
   const totalClicks = links.reduce((sum, l) => sum + (l.clicks || 0), 0);
   const activeLinks = links.filter((l) => l.isActive).length;
 
-  const isExpired = (expiresAt) => expiresAt && new Date(expiresAt) < new Date();
+  const handleExportCSV = () => {
+    const headers = ["Short Code", "Original URL", "Campaign", "Clicks", "Active", "Created At", "Expires At"];
+    const rows = links.map((l) => [
+      `traxly.site/${l.shortCode}`,
+      l.originalUrl,
+      l.campaign || "",
+      l.clicks,
+      l.isActive ? "Yes" : "No",
+      new Date(l.createdAt).toLocaleDateString(),
+      l.expiresAt ? new Date(l.expiresAt).toLocaleDateString() : "Never",
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `traxly-links-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported!");
+  };
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
@@ -97,17 +127,36 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h2 className="text-xl sm:text-2xl font-semibold text-white">Your Links</h2>
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-[#6E56CF] hover:bg-[#5A42B0] text-white px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
-            <Plus size={16} /><span className="hidden sm:block">New Link</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {links.length > 0 && (
+              <button onClick={handleExportCSV} className="flex items-center gap-2 bg-[#1E1E2E] hover:bg-[#2A2A3E] text-[#888899] hover:text-white px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                <Download size={15} /><span className="hidden sm:block">Export CSV</span>
+              </button>
+            )}
+            <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-[#6E56CF] hover:bg-[#5A42B0] text-white px-3 sm:px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+              <Plus size={16} /><span className="hidden sm:block">New Link</span>
+            </button>
+          </div>
         </div>
 
-        <div className="relative mb-6">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444455]" />
-          <input type="text" placeholder="Search links..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#111118] border border-[#1E1E2E] rounded-lg pl-9 pr-4 py-2.5 text-[#EEEEEE] placeholder-[#444455] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm" />
+        <div className="flex gap-3 mb-6 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444455]" />
+            <input type="text" placeholder="Search links..." value={search} onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-[#111118] border border-[#1E1E2E] rounded-lg pl-9 pr-4 py-2.5 text-[#EEEEEE] placeholder-[#444455] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm" />
+          </div>
+          {campaigns.length > 0 && (
+            <div className="relative">
+              <Tag size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444455]" />
+              <select value={campaignFilter} onChange={(e) => setCampaignFilter(e.target.value)}
+                className="bg-[#111118] border border-[#1E1E2E] rounded-lg pl-9 pr-4 py-2.5 text-[#EEEEEE] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm appearance-none">
+                <option value="">All Campaigns</option>
+                {campaigns.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          )}
         </div>
 
         {showForm && (
@@ -156,6 +205,11 @@ export default function Dashboard() {
                       </a>
                       {!link.isActive && <span className="text-xs bg-[#1E1E2E] text-[#888899] px-2 py-0.5 rounded-full">Inactive</span>}
                       {isExpired(link.expiresAt) && <span className="text-xs bg-red-900/30 text-red-400 px-2 py-0.5 rounded-full">Expired</span>}
+                      {link.campaign && (
+                        <span className="flex items-center gap-1 text-xs bg-[#6E56CF]/10 text-[#6E56CF] px-2 py-0.5 rounded-full border border-[#6E56CF]/20">
+                          <Tag size={9} />{link.campaign}
+                        </span>
+                      )}
                     </div>
                     <p className="text-[#888899] text-xs truncate">{truncate(link.originalUrl, 50)}</p>
                     <div className="flex items-center gap-3 mt-3 flex-wrap">

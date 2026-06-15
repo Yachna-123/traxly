@@ -2,9 +2,7 @@ const Link = require("../models/Link");
 const Click = require("../models/Click");
 const UAParser = require("ua-parser-js");
 const bcrypt = require("bcryptjs");
-const redis = require("../config/redis");
-
-const CACHE_TTL = 60 * 60;
+const { safeDel } = require("../config/redis");
 
 const getLocationFromIP = async (ip) => {
   try {
@@ -28,25 +26,13 @@ exports.handleRedirect = async (req, res) => {
   const { shortCode } = req.params;
 
   try {
-    const cached = await redis.get(`link:${shortCode}`);
-    let link;
+    const link = await Link.findOne({ shortCode, isActive: true });
 
-    if (cached) {
-      link = JSON.parse(cached);
-      console.log(`Cache HIT for ${shortCode}`);
-    } else {
-      console.log(`Cache MISS for ${shortCode}`);
-      link = await Link.findOne({ shortCode, isActive: true });
-
-      if (!link) {
-        return res.status(404).json({ message: "Link not found or inactive" });
-      }
-
-      await redis.setex(`link:${shortCode}`, CACHE_TTL, JSON.stringify(link));
+    if (!link) {
+      return res.status(404).json({ message: "Link not found or inactive" });
     }
 
     if (link.expiresAt && new Date() > new Date(link.expiresAt)) {
-      await redis.del(`link:${shortCode}`);
       return res.status(410).json({ message: "This link has expired" });
     }
 
@@ -67,9 +53,17 @@ exports.handleRedirect = async (req, res) => {
 
     const parser = new UAParser(req.headers["user-agent"]);
     const result = parser.getResult();
-
     const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
     const { country, city } = await getLocationFromIP(ip);
+
+    // Extract UTM params from destination URL
+    let utmSource = null, utmMedium = null, utmCampaign = null;
+    try {
+      const destUrl = new URL(link.originalUrl);
+      utmSource = destUrl.searchParams.get("utm_source");
+      utmMedium = destUrl.searchParams.get("utm_medium");
+      utmCampaign = destUrl.searchParams.get("utm_campaign");
+    } catch (_) {}
 
     Click.create({
       link: link._id,
@@ -80,6 +74,9 @@ exports.handleRedirect = async (req, res) => {
       ip,
       country,
       city,
+      utmSource,
+      utmMedium,
+      utmCampaign,
     }).catch((err) => console.error("Click log error:", err));
 
     Link.findByIdAndUpdate(link._id, { $inc: { clicks: 1 } }).catch((err) =>
@@ -98,19 +95,11 @@ exports.verifyPassword = async (req, res) => {
 
   try {
     const link = await Link.findOne({ shortCode, isActive: true });
-
-    if (!link) {
-      return res.status(404).json({ message: "Link not found" });
-    }
-
-    if (!link.password) {
-      return res.status(400).json({ message: "Link is not password protected" });
-    }
+    if (!link) return res.status(404).json({ message: "Link not found" });
+    if (!link.password) return res.status(400).json({ message: "Link is not password protected" });
 
     const isMatch = await bcrypt.compare(password, link.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Incorrect password" });
-    }
+    if (!isMatch) return res.status(401).json({ message: "Incorrect password" });
 
     res.json({ success: true, redirectUrl: link.originalUrl });
   } catch (error) {
