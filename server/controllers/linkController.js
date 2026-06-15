@@ -179,7 +179,7 @@ exports.editLink = async (req, res) => {
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
-    const { originalUrl, customAlias, expiresAt } = req.body;
+    const { originalUrl, customAlias, expiresAt, campaign } = req.body;
     const link = await Link.findOne({ _id: req.params.id, user: req.user._id });
     if (!link) return res.status(404).json({ message: "Link not found" });
 
@@ -198,6 +198,7 @@ exports.editLink = async (req, res) => {
     }
 
     if (expiresAt !== undefined) link.expiresAt = expiresAt || null;
+    if (campaign !== undefined) link.campaign = campaign || null;
 
     await link.save();
     await safeDel(`link:${oldShortCode}`);
@@ -304,3 +305,5 @@ exports.getBioPage = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
