@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -6,14 +6,14 @@ import API from "../api/axios";
 import StatsModal from "../components/StatsModal";
 import QRModal from "../components/QRModal";
 import EditModal from "../components/EditModal";
-import { Link2, Copy, Trash2, ToggleLeft, ToggleRight, LogOut, Plus, ExternalLink, BarChart2, QrCode, Pencil, Search, MousePointerClick, Activity, User } from "lucide-react";
+import { Link2, Copy, Trash2, ToggleLeft, ToggleRight, LogOut, Plus, ExternalLink, BarChart2, QrCode, Pencil, Search, MousePointerClick, Activity, User, Clock } from "lucide-react";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ originalUrl: "", customAlias: "" });
+  const [form, setForm] = useState({ originalUrl: "", customAlias: "", expiresAt: "" });
   const [creating, setCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [selectedLink, setSelectedLink] = useState(null);
@@ -35,9 +35,13 @@ export default function Dashboard() {
     e.preventDefault();
     setCreating(true);
     try {
-      const { data } = await API.post("/links/shorten", { originalUrl: form.originalUrl, customAlias: form.customAlias || undefined });
+      const { data } = await API.post("/links/shorten", {
+        originalUrl: form.originalUrl,
+        customAlias: form.customAlias || undefined,
+        expiresAt: form.expiresAt || undefined,
+      });
       setLinks([data.link, ...links]);
-      setForm({ originalUrl: "", customAlias: "" });
+      setForm({ originalUrl: "", customAlias: "", expiresAt: "" });
       setShowForm(false);
       toast.success("Link created!");
     } catch (err) { toast.error(err.response?.data?.message || "Failed to create link"); }
@@ -59,6 +63,8 @@ export default function Dashboard() {
   const filteredLinks = links.filter((l) => l.shortCode.toLowerCase().includes(search.toLowerCase()) || l.originalUrl.toLowerCase().includes(search.toLowerCase()));
   const totalClicks = links.reduce((sum, l) => sum + (l.clicks || 0), 0);
   const activeLinks = links.filter((l) => l.isActive).length;
+
+  const isExpired = (expiresAt) => expiresAt && new Date(expiresAt) < new Date();
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
@@ -113,6 +119,15 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <input type="text" placeholder="Custom alias (optional)" value={form.customAlias} onChange={(e) => setForm({ ...form, customAlias: e.target.value })}
                   className="flex-1 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-4 py-2.5 text-[#EEEEEE] placeholder-[#444455] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm" />
+                <input type="datetime-local" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+                  className="flex-1 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-4 py-2.5 text-[#EEEEEE] placeholder-[#444455] focus:outline-none focus:border-[#6E56CF] transition-colors text-sm"
+                  min={new Date().toISOString().slice(0, 16)} />
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={12} className="text-[#444455]" />
+                <span className="text-[#444455] text-xs">Expiry date is optional — link never expires if left empty</span>
+              </div>
+              <div className="flex justify-end">
                 <button type="submit" disabled={creating} className="bg-[#6E56CF] hover:bg-[#5A42B0] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
                   {creating ? "Creating..." : "Shorten"}
                 </button>
@@ -132,7 +147,7 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-3">
             {filteredLinks.map((link) => (
-              <div key={link._id} className={`bg-[#111118] border rounded-xl p-4 sm:p-5 transition-all ${link.isActive ? "border-[#1E1E2E] hover:border-[#6E56CF]/30" : "border-[#1E1E2E] opacity-50"}`}>
+              <div key={link._id} className={`bg-[#111118] border rounded-xl p-4 sm:p-5 transition-all ${link.isActive && !isExpired(link.expiresAt) ? "border-[#1E1E2E] hover:border-[#6E56CF]/30" : "border-[#1E1E2E] opacity-50"}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -140,6 +155,7 @@ export default function Dashboard() {
                         traxly.site/{link.shortCode}
                       </a>
                       {!link.isActive && <span className="text-xs bg-[#1E1E2E] text-[#888899] px-2 py-0.5 rounded-full">Inactive</span>}
+                      {isExpired(link.expiresAt) && <span className="text-xs bg-red-900/30 text-red-400 px-2 py-0.5 rounded-full">Expired</span>}
                     </div>
                     <p className="text-[#888899] text-xs truncate">{truncate(link.originalUrl, 50)}</p>
                     <div className="flex items-center gap-3 mt-3 flex-wrap">
@@ -147,6 +163,12 @@ export default function Dashboard() {
                         <BarChart2 size={12} />{link.clicks} clicks
                       </button>
                       <span className="text-xs text-[#444455]">{new Date(link.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      {link.expiresAt && (
+                        <span className={`flex items-center gap-1 text-xs ${isExpired(link.expiresAt) ? "text-red-400" : "text-[#FFD93D]"}`}>
+                          <Clock size={10} />
+                          {isExpired(link.expiresAt) ? "Expired" : `Expires ${new Date(link.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
