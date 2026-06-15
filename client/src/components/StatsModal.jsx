@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Monitor, Globe, TrendingUp, BarChart2 } from "lucide-react";
+import { X, Monitor, Globe, TrendingUp, BarChart2, MapPin } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -61,6 +61,8 @@ export default function StatsModal({ link, onClose }) {
           </div>
         ) : stats ? (
           <div className="p-6 space-y-6">
+
+            {/* Stats Cards */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4">
                 <p className="text-[#888899] text-xs mb-1">Total Clicks</p>
@@ -84,6 +86,7 @@ export default function StatsModal({ link, onClose }) {
               </div>
             </div>
 
+            {/* Clicks Last 7 Days */}
             <div className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp size={16} className="text-[#6E56CF]" />
@@ -135,6 +138,7 @@ export default function StatsModal({ link, onClose }) {
               </ResponsiveContainer>
             </div>
 
+            {/* Devices + Browsers */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -175,10 +179,7 @@ export default function StatsModal({ link, onClose }) {
                       {stats.clicksByDevice.map((d, i) => (
                         <div key={i} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div
-                              className="w-2 h-2 rounded-full"
-                              style={{ background: COLORS[i % COLORS.length] }}
-                            />
+                            <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
                             <span className="text-[#888899] text-xs capitalize">{d.device}</span>
                           </div>
                           <span className="text-white text-xs font-medium">{d.count}</span>
@@ -230,6 +231,39 @@ export default function StatsModal({ link, onClose }) {
               </div>
             </div>
 
+            {/* Country Analytics */}
+            {stats.clicksByCountry && stats.clicksByCountry.length > 0 && (
+              <div className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin size={16} className="text-[#00D4AA]" />
+                  <h3 className="text-white text-sm font-medium">Top Countries</h3>
+                </div>
+                <div className="space-y-3">
+                  {stats.clicksByCountry.slice(0, 5).map((c, i) => {
+                    const percentage = Math.round((c.count / stats.totalClicks) * 100);
+                    return (
+                      <div key={i}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[#888899] text-xs">{c.country}</span>
+                          <span className="text-white text-xs font-medium">{c.count} clicks ({percentage}%)</span>
+                        </div>
+                        <div className="w-full bg-[#1E1E2E] rounded-full h-1.5">
+                          <div
+                            className="h-1.5 rounded-full"
+                            style={{
+                              width: `${percentage}%`,
+                              background: COLORS[i % COLORS.length],
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Referrers */}
             {stats.clicksByReferrer.length > 0 && (
               <div className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -246,6 +280,7 @@ export default function StatsModal({ link, onClose }) {
                 </div>
               </div>
             )}
+
           </div>
         ) : (
           <p className="text-[#888899] text-center py-20">Failed to load stats</p>
