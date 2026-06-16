@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -102,8 +102,8 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <h1 className="text-xl font-bold text-white tracking-tight shrink-0">Trax<span className="text-[#6E56CF]">ly</span></h1>
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="text-[#888899] text-sm hidden sm:block">Hey, {user?.name?.split(" ")[0]} 👋</span>
-            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="text-[#888899] hover:text-[#6E56CF] transition-colors text-sm whitespace-nowrap">Bio Page 🔗</a>
+            <span className="text-[#888899] text-sm hidden sm:block">Hey, {user?.name?.split(" ")[0]} ðŸ‘‹</span>
+            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="text-[#888899] hover:text-[#6E56CF] transition-colors text-sm whitespace-nowrap">Bio Page ðŸ”—</a>
             <button onClick={handleLogout} className="flex items-center gap-1.5 text-[#888899] hover:text-white transition-colors text-sm">
               <LogOut size={15} /><span className="hidden sm:block">Logout</span>
             </button>
@@ -174,7 +174,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={12} className="text-[#444455]" />
-                <span className="text-[#444455] text-xs">Expiry date is optional — link never expires if left empty</span>
+                <span className="text-[#444455] text-xs">Expiry date is optional â€” link never expires if left empty</span>
               </div>
               <div className="flex justify-end">
                 <button type="submit" disabled={creating} className="bg-[#6E56CF] hover:bg-[#5A42B0] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
@@ -250,7 +250,7 @@ export default function Dashboard() {
                 <p className="text-[#888899] text-xs">traxly.site/u/{user?.username}</p>
               </div>
             </div>
-            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#6E56CF]/10 hover:bg-[#6E56CF]/20 text-[#6E56CF] border border-[#6E56CF]/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0">View Page 🔗</a>
+            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#6E56CF]/10 hover:bg-[#6E56CF]/20 text-[#6E56CF] border border-[#6E56CF]/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0">View Page ðŸ”—</a>
           </div>
         )}
       </div>

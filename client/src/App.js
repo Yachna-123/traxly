@@ -7,6 +7,8 @@ import Landing from "./pages/Landing";
 import BioPage from "./pages/BioPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ABTestPage from "./pages/ABTestPage";
+import APIKeyPage from "./pages/APIKeyPage";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -16,17 +18,7 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <Router>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: "#111118",
-            color: "#EEEEEE",
-            border: "1px solid #1E1E2E",
-            borderRadius: "8px",
-          },
-        }}
-      />
+      <Toaster position="top-right" toastOptions={{ style: { background: "#111118", color: "#EEEEEE", border: "1px solid #1E1E2E", borderRadius: "8px" } }} />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -34,14 +26,9 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/u/:username" element={<BioPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/abtests" element={<PrivateRoute><ABTestPage /></PrivateRoute>} />
+        <Route path="/apikeys" element={<PrivateRoute><APIKeyPage /></PrivateRoute>} />
       </Routes>
     </Router>
   );
