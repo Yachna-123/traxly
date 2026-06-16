@@ -214,6 +214,7 @@ exports.editLink = async (req, res) => {
         expiresAt: link.expiresAt,
         isActive: link.isActive,
         clicks: link.clicks,
+        campaign: link.campaign,
         updatedAt: link.updatedAt,
       },
     });
