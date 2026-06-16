@@ -104,7 +104,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="text-[#888899] text-sm hidden sm:block">Hey, {user?.name?.split(" ")[0]}</span>
             <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="text-[#888899] hover:text-[#6E56CF] transition-colors text-sm whitespace-nowrap hidden sm:block">Bio Page</a>
-            <a href="/abtests" className="flex items-center gap-1.5 bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20 text-[#FF6B6B] border border-[#FF6B6B]/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hidden sm:flex">A/B Tests</a><a href="/apikeys" className="flex items-center gap-1.5 bg-[#FFD93D]/10 hover:bg-[#FFD93D]/20 text-[#FFD93D] border border-[#FFD93D]/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hidden sm:flex">API Keys</a>
+            <a href="/abtests" className="flex items-center gap-1.5 bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20 text-[#FF6B6B] border border-[#FF6B6B]/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hidden sm:flex">A/B Tests</a><a href="/apikeys" className="flex items-center gap-1.5 bg-[#FFD93D]/10 hover:bg-[#FFD93D]/20 text-[#FFD93D] border border-[#FFD93D]/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hidden sm:flex">API Keys</a><button onClick={handleLogout} className="flex items-center gap-1.5 text-[#888899] hover:text-white transition-colors text-sm">
               <LogOut size={15} /><span className="hidden sm:block">Logout</span>
             </button>
           </div>
@@ -174,7 +174,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={12} className="text-[#444455]" />
-                <span className="text-[#444455] text-xs">Expiry date is optional ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â link never expires if left empty</span>
+                <span className="text-[#444455] text-xs">Expiry date is optional ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â link never expires if left empty</span>
               </div>
               <div className="flex justify-end">
                 <button type="submit" disabled={creating} className="bg-[#6E56CF] hover:bg-[#5A42B0] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
@@ -250,7 +250,7 @@ export default function Dashboard() {
                 <p className="text-[#888899] text-xs">traxly.site/u/{user?.username}</p>
               </div>
             </div>
-            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#6E56CF]/10 hover:bg-[#6E56CF]/20 text-[#6E56CF] border border-[#6E56CF]/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0">View Page ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â‚¬â€</a>
+            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#6E56CF]/10 hover:bg-[#6E56CF]/20 text-[#6E56CF] border border-[#6E56CF]/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0">View Page ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</a>
           </div>
         )}
       </div>
