@@ -174,7 +174,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={12} className="text-[#444455]" />
-                <span className="text-[#444455] text-xs">Expiry date is optional ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â link never expires if left empty</span>
+                <span className="text-[#444455] text-xs">Expiry date is optional ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â link never expires if left empty</span>
               </div>
               <div className="flex justify-end">
                 <button type="submit" disabled={creating} className="bg-[#6E56CF] hover:bg-[#5A42B0] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
@@ -250,7 +250,7 @@ export default function Dashboard() {
                 <p className="text-[#888899] text-xs">traxly.site/u/{user?.username}</p>
               </div>
             </div>
-            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#6E56CF]/10 hover:bg-[#6E56CF]/20 text-[#6E56CF] border border-[#6E56CF]/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0">View Page ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</a>
+            <a href={`/u/${user?.username}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#6E56CF]/10 hover:bg-[#6E56CF]/20 text-[#6E56CF] border border-[#6E56CF]/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0">View Page</a>
           </div>
         )}
       </div>
