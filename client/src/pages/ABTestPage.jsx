@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -171,7 +171,7 @@ export default function ABTestPage() {
                   </div>
 
                   <p className="text-[#444455] text-xs flex items-center gap-1">
-                    <BarChart2 size={11} /> {total} total clicks â€” Created {new Date(test.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    <BarChart2 size={11} /> {total} total clicks Ã¢â‚¬â€ Created {new Date(test.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </p>
                 </div>
               );
@@ -182,3 +182,4 @@ export default function ABTestPage() {
     </div>
   );
 }
+
