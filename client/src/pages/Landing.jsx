@@ -23,7 +23,7 @@ const features = [
   {
     icon: <Tag size={20} className="text-[#FFD93D]" />,
     title: "UTM & Campaign Tracking",
-    desc: "Track utm_source, utm_medium and utm_campaign — just like Google Analytics.",
+    desc: "Track utm_source, utm_medium and utm_campaign â€” just like Google Analytics.",
   },
   {
     icon: <RefreshCw size={20} className="text-[#FF6B6B]" />,
@@ -33,7 +33,7 @@ const features = [
   {
     icon: <QrCode size={20} className="text-[#6E56CF]" />,
     title: "QR Code Generation",
-    desc: "Every link gets a downloadable QR code instantly — perfect for print campaigns.",
+    desc: "Every link gets a downloadable QR code instantly â€” perfect for print campaigns.",
   },
   {
     icon: <Shield size={20} className="text-[#6E56CF]" />,
@@ -53,7 +53,7 @@ const features = [
   {
     icon: <Zap size={20} className="text-[#6E56CF]" />,
     title: "Redis Caching",
-    desc: "Lightning fast redirects powered by Redis — sub-millisecond response times.",
+    desc: "Lightning fast redirects powered by Redis â€” sub-millisecond response times.",
   },
   {
     icon: <Lock size={20} className="text-[#FF6B6B]" />,
@@ -71,7 +71,7 @@ const stats = [
   { value: "10x", label: "Faster redirects with Redis" },
   { value: "100%", label: "Free to use" },
   { value: "12+", label: "Analytics data points" },
-  { value: "∞", label: "Links you can create" },
+  { value: "âˆž", label: "Links you can create" },
 ];
 
 const useCases = [
@@ -119,7 +119,7 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto px-6 py-28 text-center relative">
           <div className="inline-flex items-center gap-2 bg-[#111118] border border-[#1E1E2E] rounded-full px-4 py-1.5 text-xs text-[#888899] mb-8">
             <span className="w-1.5 h-1.5 bg-[#00D4AA] rounded-full animate-pulse" />
-            Marketing analytics platform — built for growth
+            Marketing analytics platform â€” built for growth
           </div>
           <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight mb-6">
             Shorten, track and
@@ -128,14 +128,14 @@ export default function Landing() {
           </h1>
           <p className="text-[#888899] text-lg max-w-2xl mx-auto mb-10">
             Traxly gives you powerful link management with UTM campaign tracking, geo-analytics,
-            A/B testing, QR codes, password protection, and a REST API — all in one place.
+            A/B testing, QR codes, password protection, and a REST API â€” all in one place.
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link to="/register" className="flex items-center gap-2 bg-[#6E56CF] hover:bg-[#5A42B0] text-white px-8 py-3 rounded-lg font-medium transition-colors">
               Start for free <ArrowRight size={16} />
             </Link>
             <Link to="/login" className="text-[#888899] hover:text-white transition-colors px-6 py-3">
-              Sign in →
+              Sign in â†’
             </Link>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function Landing() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-white mb-4">Built for every role</h2>
-          <p className="text-[#888899]">Whether you are a marketer, developer or consultant — Traxly works for you</p>
+          <p className="text-[#888899]">Whether you are a marketer, developer or consultant â€” Traxly works for you</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {useCases.map((u, i) => (
@@ -198,7 +198,7 @@ export default function Landing() {
           {[
             { step: "01", title: "Create an account", desc: "Sign up free in under 30 seconds. No credit card required." },
             { step: "02", title: "Shorten your links", desc: "Paste your long URL, add a custom alias, set expiry and campaign tags." },
-            { step: "03", title: "Track and grow", desc: "Watch real-time analytics — clicks, countries, devices, UTM campaigns and more." },
+            { step: "03", title: "Track and grow", desc: "Watch real-time analytics â€” clicks, countries, devices, UTM campaigns and more." },
           ].map((s, i) => (
             <div key={i} className="bg-[#111118] border border-[#1E1E2E] rounded-2xl p-6 relative">
               <span className="text-5xl font-bold text-[#1E1E2E] absolute top-4 right-6">{s.step}</span>
@@ -231,7 +231,7 @@ export default function Landing() {
             <Link to="/login" className="hover:text-[#888899] transition-colors">Sign in</Link>
             <Link to="/register" className="hover:text-[#888899] transition-colors">Sign up</Link>
           </div>
-          <p className="text-[#444455] text-sm">© 2026 Traxly. All rights reserved.</p>
+          <p className="text-[#444455] text-sm">Â© 2026 Traxly. All rights reserved.</p>
         </div>
       </footer>
     </div>

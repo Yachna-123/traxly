@@ -94,7 +94,7 @@ export default function APIKeyPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg px-4 py-3">
                     <code className="text-[#6E56CF] text-sm flex-1 font-mono truncate">
-                      {showKey ? apiKey.key : apiKey.key.slice(0, 8) + "••••••••••••••••••••••••••••••••••••••••"}
+                      {showKey ? apiKey.key : apiKey.key.slice(0, 8) + "â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"}
                     </code>
                     <button onClick={() => setShowKey(!showKey)} className="text-[#444455] hover:text-[#888899] text-xs whitespace-nowrap">
                       {showKey ? "Hide" : "Show"}
@@ -109,7 +109,7 @@ export default function APIKeyPage() {
               ) : (
                 <div className="text-center py-8">
                   <Key size={32} className="text-[#1E1E2E] mx-auto mb-3" />
-                  <p className="text-[#888899] text-sm">No API key yet — generate one to get started</p>
+                  <p className="text-[#888899] text-sm">No API key yet â€” generate one to get started</p>
                 </div>
               )}
             </div>
